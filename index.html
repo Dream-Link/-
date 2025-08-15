@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>खाता बही</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        
+        .ledger-container {
+            max-width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .header h1:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .history-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .history-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .rename-input {
+            background: transparent;
+            border: 1px dashed rgba(255,255,255,0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 20px;
+            font-weight: 600;
+            width: auto;
+            min-width: 150px;
+        }
+        
+        .history-date {
+            font-weight: 600;
+            color: #374151;
+            margin: 15px 0 10px 0;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+        }
+        
+        .add-btn {
+            background: #10b981;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+        }
+        
+        .ledger-page {
+            background: #f8f9fa;
+            padding: 15px;
+            min-height: 500px;
+        }
+        
+        .date-header {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .customer-box {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .customer-header {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .customer-header.saved {
+            background: #6b7280;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
+        .customer-header.unsaved {
+            background: #dc2626;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .save-icon {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .save-icon:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .warning-message {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-left: 4px solid #f59e0b;
+            margin-bottom: 10px;
+        }
+        
+        .customer-total {
+            font-size: 14px;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .customer-items {
+            padding: 0;
+        }
+        
+        .item-row-display {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .item-row-display:last-child {
+            border-bottom: none;
+        }
+        
+        .amount {
+            width: 70px;
+            text-align: left;
+            font-weight: 600;
+            color: #dc2626;
+            font-size: 14px;
+        }
+        
+        .item {
+            flex: 1;
+            text-align: left;
+            padding-left: 15px;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .total-section {
+            background: #f3f4f6;
+            padding: 15px 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .total {
+            text-align: right;
+            font-size: 18px;
+            font-weight: 700;
+            color: #dc2626;
+        }
+        
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .popup-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .items-section {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .item-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .item-amount {
+            width: 80px;
+        }
+        
+        .item-name {
+            flex: 1;
+        }
+        
+        .remove-item {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .add-item-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .popup-total {
+            text-align: right;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        
+        .save-btn {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="ledger-container">
+        <div class="header">
+            <h1 id="ledgerTitle" onclick="toggleRename()">My Shop</h1>
+            <button class="add-btn" onclick="openPopup()">+</button>
+        </div>
+        
+        <div class="ledger-page" id="ledgerPage">
+            <div class="date-header" id="dateHeader"></div>
+            <div class="empty-state">
+                + Add New Entry
+            </div>
+        </div>
+        
+
+    </div>
+    
+    <div class="popup-overlay" id="popupOverlay" onclick="closePopup()">
+        <div class="popup" onclick="event.stopPropagation()">
+            <div class="popup-header">
+                <div class="popup-title">Add</div>
+                <button class="close-btn" onclick="closePopup()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">ग्राहक का नाम</label>
+                <input type="text" class="form-input" id="customerName" placeholder="ग्राहक का नाम लिखें">
+            </div>
+            
+            <div class="items-section">
+                <div class="form-label">सामान की जानकारी</div>
+                <div id="itemsList">
+                    <div class="item-row">
+                        <input type="number" class="form-input item-amount" placeholder="₹ राशि" oninput="calculateTotal()">
+                        <input type="text" class="form-input item-name" placeholder="सामान का नाम">
+                        <button class="remove-item" onclick="removeItem(this)" style="display: none;">×</button>
+                    </div>
+                </div>
+                <button class="add-item-btn" onclick="addItem()">+ और सामान जोड़ें</button>
+                <div class="popup-total">कुल: ₹<span id="popupTotal">0</span></div>
+            </div>
+            
+            <button class="save-btn" onclick="saveEntry()">SAVE</button>
+        </div>
+    </div>
+    
+    <div class="history-popup" id="historyPopup" onclick="closeHistory()">
+        <div class="history-content" onclick="event.stopPropagation()">
+            <div class="popup-header">
+                <div class="popup-title">इतिहास और सेटिंग्स</div>
+                <button class="close-btn" onclick="closeHistory()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">खाता बही का नाम</label>
+                <input type="text" class="form-input" id="newLedgerName" placeholder="नया नाम लिखें">
+                <button class="add-item-btn" onclick="updateLedgerName()" style="margin-top: 10px;">नाम अपडेट करें</button>
+            </div>
+            
+            <div id="historyContent">
+                <div class="form-label">पुराने रिकॉर्ड</div>
+                <div class="empty-state">कोई पुराना रिकॉर्ड नहीं मिला</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let entries = [];
+        let itemCount = 1;
+        let ledgerName = 'खाता बही';
+        let allHistory = {};
+        let savedCustomers = new Set();
+
+        // Load data on page load
+        window.onload = function() {
+            loadData();
+            updateDateHeader();
+            updateLedger();
+            startMidnightCheck();
+        };
+        
+        function startMidnightCheck() {
+            // Check every minute if it's past midnight
+            setInterval(() => {
+                const now = new Date();
+                const today = now.toDateString();
+                const lastCheck = localStorage.getItem('lastMidnightCheck');
+                
+                if (lastCheck !== today) {
+                    // It's a new day - clean up saved entries
+                    entries = entries.filter(entry => !savedCustomers.has(entry.customer));
+                    
+                    // Mark remaining entries as unsaved from previous day
+                    entries.forEach(entry => {
+                        if (savedCustomers.has(entry.customer)) {
+                            savedCustomers.delete(entry.customer);
+                        }
+                    });
+                    
+                    localStorage.setItem('lastMidnightCheck', today);
+                    saveData();
+                    updateDateHeader();
+                    updateLedger();
+                }
+            }, 60000); // Check every minute
+        }
+
+        function loadData() {
+            const savedName = localStorage.getItem('ledgerName');
+            const savedEntries = localStorage.getItem('todayEntries');
+            const savedHistory = localStorage.getItem('ledgerHistory');
+            const savedCustomersList = localStorage.getItem('savedCustomers');
+            
+            if (savedName) {
+                ledgerName = savedName;
+                document.getElementById('ledgerTitle').textContent = ledgerName;
+            }
+            
+            if (savedEntries) {
+                entries = JSON.parse(savedEntries);
+            }
+            
+            if (savedHistory) {
+                allHistory = JSON.parse(savedHistory);
+            }
+            
+            if (savedCustomersList) {
+                savedCustomers = new Set(JSON.parse(savedCustomersList));
+            }
+            
+            // Check if it's a new day and mark unsaved entries
+            checkNewDay();
+        }
+
+        function saveData() {
+            localStorage.setItem('ledgerName', ledgerName);
+            localStorage.setItem('todayEntries', JSON.stringify(entries));
+            localStorage.setItem('ledgerHistory', JSON.stringify(allHistory));
+            localStorage.setItem('savedCustomers', JSON.stringify([...savedCustomers]));
+            localStorage.setItem('lastSaveDate', new Date().toDateString());
+        }
+        
+        function checkNewDay() {
+            const lastSaveDate = localStorage.getItem('lastSaveDate');
+            const today = new Date().toDateString();
+            
+            if (lastSaveDate && lastSaveDate !== today) {
+                // It's a new day - remove saved entries and mark unsaved as red
+                entries = entries.filter(entry => !savedCustomers.has(entry.customer));
+                savedCustomers.clear();
+                saveData();
+            }
+        }
+
+        function updateDateHeader() {
+            const today = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            const dateString = today.toLocaleDateString('hi-IN', options);
+            document.getElementById('dateHeader').textContent = dateString;
+        }
+
+        function openPopup() {
+            document.getElementById('popupOverlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            resetForm();
+        }
+
+        function toggleRename() {
+            openHistory();
+        }
+
+        function openHistory() {
+            document.getElementById('newLedgerName').value = ledgerName;
+            updateHistoryContent();
+            document.getElementById('historyPopup').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeHistory() {
+            document.getElementById('historyPopup').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function updateLedgerName() {
+            const newName = document.getElementById('newLedgerName').value.trim();
+            if (newName) {
+                ledgerName = newName;
+                document.getElementById('ledgerTitle').textContent = ledgerName;
+                saveData();
+                closeHistory();
+            }
+        }
+
+        function addItem() {
+            itemCount++;
+            const itemsList = document.getElementById('itemsList');
+            const newItem = document.createElement('div');
+            newItem.className = 'item-row';
+            newItem.innerHTML = `
+                <input type="number" class="form-input item-amount" placeholder="₹ राशि" oninput="calculateTotal()">
+                <input type="text" class="form-input item-name" placeholder="सामान का नाम">
+                <button class="remove-item" onclick="removeItem(this)">×</button>
+            `;
+            itemsList.appendChild(newItem);
+            updateRemoveButtons();
+        }
+
+        function removeItem(button) {
+            button.parentElement.remove();
+            itemCount--;
+            calculateTotal();
+            updateRemoveButtons();
+        }
+
+        function updateRemoveButtons() {
+            const removeButtons = document.querySelectorAll('.remove-item');
+            removeButtons.forEach((btn, index) => {
+                btn.style.display = removeButtons.length > 1 ? 'block' : 'none';
+            });
+        }
+
+        function calculateTotal() {
+            const amounts = document.querySelectorAll('.item-amount');
+            let total = 0;
+            amounts.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            document.getElementById('popupTotal').textContent = total;
+        }
+
+        function saveEntry() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const itemRows = document.querySelectorAll('.item-row');
+            
+            if (!customerName) {
+                alert('कृपया ग्राहक का नाम लिखें');
+                return;
+            }
+
+            let hasValidItem = false;
+            const items = [];
+            
+            itemRows.forEach(row => {
+                const amount = parseFloat(row.querySelector('.item-amount').value) || 0;
+                const name = row.querySelector('.item-name').value.trim();
+                
+                if (amount > 0 && name) {
+                    items.push({ amount, name });
+                    hasValidItem = true;
+                }
+            });
+
+            if (!hasValidItem) {
+                alert('कृपया कम से कम एक सामान की जानकारी भरें');
+                return;
+            }
+
+            const entry = {
+                customer: customerName,
+                items: items,
+                total: items.reduce((sum, item) => sum + item.amount, 0),
+                date: new Date()
+            };
+
+            entries.push(entry);
+            updateLedger();
+            saveData();
+            closePopup();
+        }
+
+        function saveToHistory(customerName) {
+            if (confirm('क्या आपने बही में लिख लिया है?')) {
+                const today = new Date().toDateString();
+                const customerEntries = entries.filter(entry => entry.customer === customerName);
+                
+                if (!allHistory[today]) {
+                    allHistory[today] = [];
+                }
+                
+                allHistory[today] = allHistory[today].concat(customerEntries);
+                savedCustomers.add(customerName);
+                saveData();
+                updateLedger();
+            }
+        }
+
+        function updateLedger() {
+            const ledgerPage = document.getElementById('ledgerPage');
+            const dateHeader = document.getElementById('dateHeader');
+            
+            if (entries.length === 0) {
+                ledgerPage.innerHTML = dateHeader.outerHTML + '<div class="empty-state">+ बटन दबाकर नई एंट्री जोड़ें</div>';
+                return;
+            }
+
+            // Group entries by customer
+            const customerGroups = {};
+            entries.forEach(entry => {
+                if (!customerGroups[entry.customer]) {
+                    customerGroups[entry.customer] = [];
+                }
+                customerGroups[entry.customer].push(entry);
+            });
+
+            let html = dateHeader.outerHTML;
+            // Check if there are unsaved entries from previous day
+            const lastSaveDate = localStorage.getItem('lastSaveDate');
+            const today = new Date().toDateString();
+            const hasUnsavedFromPreviousDay = lastSaveDate && lastSaveDate !== today && entries.some(entry => !savedCustomers.has(entry.customer));
+
+            Object.keys(customerGroups).forEach(customerName => {
+                const customerEntries = customerGroups[customerName];
+                let customerTotal = 0;
+                let itemsHtml = '';
+                const isSaved = savedCustomers.has(customerName);
+                const isUnsavedFromPreviousDay = hasUnsavedFromPreviousDay && !isSaved;
+
+                customerEntries.forEach(entry => {
+                    entry.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="item-row-display">
+                                <div class="amount">₹${item.amount}</div>
+                                <div class="item">${item.name}</div>
+                            </div>
+                        `;
+                        customerTotal += item.amount;
+                    });
+                });
+
+                let warningHtml = '';
+                if (isUnsavedFromPreviousDay) {
+                    warningHtml = '<div class="warning-message">आपने इनको बही में लिखकर हिस्ट्री में सेव नहीं किया अभी, जल्दी कीजिये</div>';
+                }
+
+                const headerClass = isSaved ? 'saved' : (isUnsavedFromPreviousDay ? 'unsaved' : '');
+                const saveButton = !isSaved ? `<button class="save-icon" onclick="saveToHistory('${customerName}')" title="हिस्ट्री में सेव करें">✓</button>` : '';
+
+                html += `
+                    <div class="customer-box">
+                        ${warningHtml}
+                        <div class="customer-header ${headerClass}">
+                            <span>${customerName}</span>
+                            <div style="display: flex; align-items: center;">
+                                <span class="customer-total">₹${customerTotal}</span>
+                                ${saveButton}
+                            </div>
+                        </div>
+                        <div class="customer-items">
+                            ${itemsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+
+            ledgerPage.innerHTML = html;
+        }
+
+        function updateHistoryContent() {
+            const historyContent = document.getElementById('historyContent');
+            
+            if (Object.keys(allHistory).length === 0) {
+                historyContent.innerHTML = `
+                    <div class="form-label">पुराने रिकॉर्ड</div>
+                    <div class="empty-state">कोई पुराना रिकॉर्ड नहीं मिला</div>
+                `;
+                return;
+            }
+
+            let html = '<div class="form-label">पुराने रिकॉर्ड</div>';
+            
+            Object.keys(allHistory).sort().reverse().forEach(date => {
+                const dayEntries = allHistory[date];
+                let dayTotal = 0;
+                
+                dayEntries.forEach(entry => {
+                    dayTotal += entry.total;
+                });
+                
+                html += `
+                    <div class="history-date">${date} - कुल: ₹${dayTotal}</div>
+                `;
+                
+                const customerGroups = {};
+                dayEntries.forEach(entry => {
+                    if (!customerGroups[entry.customer]) {
+                        customerGroups[entry.customer] = [];
+                    }
+                    customerGroups[entry.customer].push(entry);
+                });
+                
+                Object.keys(customerGroups).forEach(customerName => {
+                    const customerEntries = customerGroups[customerName];
+                    let customerTotal = 0;
+                    let itemsHtml = '';
+                    
+                    customerEntries.forEach(entry => {
+                        entry.items.forEach(item => {
+                            itemsHtml += `
+                                <div class="item-row-display">
+                                    <div class="amount">₹${item.amount}</div>
+                                    <div class="item">${item.name}</div>
+                                </div>
+                            `;
+                            customerTotal += item.amount;
+                        });
+                    });
+                    
+                    html += `
+                        <div class="customer-box" style="margin: 10px 0;">
+                            <div class="customer-header" style="background: #6b7280;">
+                                <span>${customerName}</span>
+                                <span class="customer-total">₹${customerTotal}</span>
+                            </div>
+                            <div class="customer-items">
+                                ${itemsHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            
+            historyContent.innerHTML = html;
+        }
+
+        function resetForm() {
+            document.getElementById('customerName').value = '';
+            const itemsList = document.getElementById('itemsList');
+            itemsList.innerHTML = `
+                <div class="item-row">
+                    <input type="number" class="form-input item-amount" placeholder="₹ राशि" oninput="calculateTotal()">
+                    <input type="text" class="form-input item-name" placeholder="सामान का नाम">
+                    <button class="remove-item" onclick="removeItem(this)" style="display: none;">×</button>
+                </div>
+            `;
+            itemCount = 1;
+            document.getElementById('popupTotal').textContent = '0';
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96f9f4b643644069',t:'MTc1NTI3NDE2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
