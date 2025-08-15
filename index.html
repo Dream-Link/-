@@ -14,16 +14,18 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f8f9fa;
-            padding: 10px;
+            padding: 0;
+            margin: 0;
             min-height: 100vh;
         }
         
         .ledger-container {
-            max-width: 100%;
+            width: 100%;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0;
+            box-shadow: none;
             overflow: hidden;
+            min-height: 100vh;
         }
         
         .header {
@@ -67,9 +69,9 @@
             background: white;
             border-radius: 12px;
             padding: 20px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
+            width: 95%;
+            max-width: none;
+            max-height: 85vh;
             overflow-y: auto;
         }
         
@@ -98,15 +100,16 @@
             background: #10b981;
             border: none;
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-left: auto;
+            touch-action: manipulation;
         }
         
         .ledger-page {
@@ -165,15 +168,16 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
             margin-left: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
         
         .save-icon:hover {
@@ -259,9 +263,9 @@
             background: white;
             border-radius: 12px;
             padding: 20px;
-            width: 90%;
-            max-width: 400px;
-            max-height: 80vh;
+            width: 95%;
+            max-width: none;
+            max-height: 85vh;
             overflow-y: auto;
         }
         
@@ -300,10 +304,11 @@
         
         .form-input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px;
+            touch-action: manipulation;
         }
         
         .items-section {
@@ -365,11 +370,12 @@
             background: #2563eb;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 16px;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
+            touch-action: manipulation;
         }
         
         .empty-state {
@@ -390,7 +396,7 @@
         <div class="ledger-page" id="ledgerPage">
             <div class="date-header" id="dateHeader"></div>
             <div class="empty-state">
-                + Add New Entry
+                + बटन दबाकर नई एंट्री जोड़ें
             </div>
         </div>
         
@@ -400,7 +406,7 @@
     <div class="popup-overlay" id="popupOverlay" onclick="closePopup()">
         <div class="popup" onclick="event.stopPropagation()">
             <div class="popup-header">
-                <div class="popup-title">Add</div>
+                <div class="popup-title">नई एंट्री जोड़ें</div>
                 <button class="close-btn" onclick="closePopup()">&times;</button>
             </div>
             
@@ -422,7 +428,7 @@
                 <div class="popup-total">कुल: ₹<span id="popupTotal">0</span></div>
             </div>
             
-            <button class="save-btn" onclick="saveEntry()">SAVE</button>
+            <button class="save-btn" onclick="saveEntry()">एंट्री सेव करें</button>
         </div>
     </div>
     
@@ -829,5 +835,5 @@
             document.getElementById('popupTotal').textContent = '0';
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96f9f4b643644069',t:'MTc1NTI3NDE2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96fa0aecf236d7d2',t:'MTc1NTI3NTA3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
